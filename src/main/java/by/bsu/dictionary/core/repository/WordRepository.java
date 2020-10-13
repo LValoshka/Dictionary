@@ -15,4 +15,9 @@ public interface WordRepository extends JpaRepository<Word, Long> {
     List<Word> findAllOrderByName();
 
     Optional<Word> findByName(String oldWord);
+
+    @Query("select word from Word word " +
+            "where (lower(word.name) like lower(concat('%', :filter, '%'))) " +
+            "order by word.name")
+    List<Word> findAllByFilter(String filter);
 }

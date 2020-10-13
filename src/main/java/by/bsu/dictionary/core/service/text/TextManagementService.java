@@ -2,6 +2,7 @@ package by.bsu.dictionary.core.service.text;
 
 import by.bsu.dictionary.core.model.Word;
 import by.bsu.dictionary.core.service.word.WordManagementService;
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
@@ -16,29 +17,28 @@ import java.util.stream.Collectors;
 public class TextManagementService {
 
     private final WordManagementService wordManagementService;
+    public static String globalText = "";
 
     public void deleteWordFromText(String oldWord) {
-        String text = String.valueOf(uploadText());
-        if (text.contains(oldWord)) {
+        if (globalText.contains(oldWord)) {
             String tempWord = oldWord + " ";
-            text = text.replaceAll(tempWord, " ");
+            globalText = globalText.replaceAll(tempWord, " ");
 
             tempWord = " " + oldWord;
-            text = text.replaceAll(tempWord, " ");
+            globalText = globalText.replaceAll(tempWord, " ");
         }
-        saveTextToFile(text);
+        saveTextToFile(globalText);
     }
 
     public void replaceWordFromTextWithNewOne(String oldWord, String newWord) {
-        String text = String.valueOf(uploadText());
-        if (text.contains(oldWord)) {
+        if (globalText.contains(" "+oldWord+" ")) {
             String tempWord = oldWord + " ";
-            text = text.replaceAll(tempWord, " " + newWord + " ");
+            globalText = globalText.replaceAll(tempWord, " " + newWord + " ");
 
             tempWord = " " + oldWord;
-            text = text.replaceAll(tempWord, " " + newWord + " ");
+            globalText = globalText.replaceAll(tempWord, " " + newWord + " ");
         }
-        saveTextToFile(text);
+        saveTextToFile(globalText);
         saveEditedWord(oldWord, newWord);
     }
 
@@ -50,7 +50,7 @@ public class TextManagementService {
     }
 
     public StringBuilder uploadText() {
-        File file = new File("/home/luba/Projects/dictionary/text.txt");
+        File file = new File("/home/luba/Projects/Dictionary/text.txt");
         String st;
         StringBuilder stringBuilder = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -63,8 +63,14 @@ public class TextManagementService {
         return stringBuilder;
     }
 
+    public String uploadTextFromHome(MemoryBuffer memoryBuffer){
+        globalText = new BufferedReader(new InputStreamReader(memoryBuffer.getInputStream()))
+                .lines().collect(Collectors.joining("\n"));
+        return globalText;
+    }
+
     public void parseText() {
-        String[] words = String.valueOf(uploadText()).split("\\W+");
+        String[] words = globalText.split("\\W+");
         Map<String, Long> nameFrequency = Arrays.stream(words)
                 .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
         wordManagementService.save(nameFrequency);
@@ -76,7 +82,7 @@ public class TextManagementService {
 
     @SneakyThrows
     private void saveTextToFile(String text) {
-        FileWriter fileWriter = new FileWriter("text.txt");
+        FileWriter fileWriter = new FileWriter("savedText.txt");
         PrintWriter printWriter = new PrintWriter(fileWriter);
         printWriter.print(text);
         printWriter.close();
