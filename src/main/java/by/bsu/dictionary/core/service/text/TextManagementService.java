@@ -1,15 +1,19 @@
 package by.bsu.dictionary.core.service.text;
 
-import by.bsu.dictionary.core.model.Word;
+import by.bsu.dictionary.core.service.part_of_speech.PartOfSpeechManagementService;
 import by.bsu.dictionary.core.service.word.WordManagementService;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTagger;
+import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,7 +21,9 @@ import java.util.stream.Collectors;
 public class TextManagementService {
 
     private final WordManagementService wordManagementService;
+    private final PartOfSpeechManagementService partOfSpeechManagementService;
     public static String globalText = "";
+
 
     public void deleteWordFromText(String oldWord) {
         if (globalText.contains(oldWord)) {
@@ -31,7 +37,7 @@ public class TextManagementService {
     }
 
     public void replaceWordFromTextWithNewOne(String oldWord, String newWord) {
-        if (globalText.contains(" "+oldWord+" ")) {
+        if (globalText.contains(" " + oldWord + " ")) {
             String tempWord = oldWord + " ";
             globalText = globalText.replaceAll(tempWord, " " + newWord + " ");
 
@@ -42,15 +48,8 @@ public class TextManagementService {
         saveEditedWord(oldWord, newWord);
     }
 
-    public void addNewWord(Word word) {
-        wordManagementService.save(word);
-        StringBuilder stringBuilder = uploadText();
-        stringBuilder.append(" ").append(word.getName());
-        saveTextToFile(String.valueOf(stringBuilder));
-    }
-
     public StringBuilder uploadText() {
-        File file = new File("/home/luba/Projects/Dictionary/text.txt");
+        File file = new File("/home/luba/IdeaProjects/Dictionary/text.txt");
         String st;
         StringBuilder stringBuilder = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -63,17 +62,44 @@ public class TextManagementService {
         return stringBuilder;
     }
 
-    public String uploadTextFromHome(MemoryBuffer memoryBuffer){
+    public String uploadTextFromHome(MemoryBuffer memoryBuffer) {
         globalText = new BufferedReader(new InputStreamReader(memoryBuffer.getInputStream()))
                 .lines().collect(Collectors.joining("\n"));
         return globalText;
     }
 
+    @SneakyThrows
+    public String tokenizeText(String text) {
+        InputStream inputStream = new FileInputStream("/home/luba/IdeaProjects/Dictionary/en-pos-maxent.bin");
+        POSModel model = new POSModel(inputStream);
+        POSTagger tagger = new POSTaggerME(model);
+
+        WhitespaceTokenizer whitespaceTokenizer = WhitespaceTokenizer.INSTANCE;
+        String[] tokens = whitespaceTokenizer.tokenize(text);
+
+        String[] tags = tagger.tag(tokens);
+
+        POSSample sample = new POSSample(tokens, tags);
+
+        globalText = sample.toString();
+        return globalText;
+    }
+
     public void parseText() {
         String[] words = globalText.split("\\W+");
-        Map<String, Long> nameFrequency = Arrays.stream(words)
+        Map<String, List<String>> namePartOfSpeech = new HashMap<>();
+        Arrays.stream(words).forEach(str -> {
+            String[] parsedStr = str.split("_");
+            String name = parsedStr[0];
+            String partOfSpeech = parsedStr[1];
+
+            namePartOfSpeech.put(name, Collections.singletonList(partOfSpeech));
+        });
+
+        Map<String, Long> nameFrequency = namePartOfSpeech.keySet().stream()
                 .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
         wordManagementService.save(nameFrequency);
+        partOfSpeechManagementService.save(namePartOfSpeech);
     }
 
     public void saveEditedWord(String oldWord, String newWord) {

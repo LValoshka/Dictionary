@@ -1,6 +1,8 @@
 package by.bsu.dictionary.ui.view;
 
+import by.bsu.dictionary.core.model.PartOfSpeech;
 import by.bsu.dictionary.core.model.Word;
+import by.bsu.dictionary.core.service.part_of_speech.PartOfSpeechManagementService;
 import by.bsu.dictionary.core.service.text.TextManagementService;
 import by.bsu.dictionary.core.service.word.WordFinder;
 import by.bsu.dictionary.core.service.word.WordManagementService;
@@ -26,7 +28,9 @@ import com.vaadin.flow.router.Route;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 
 @Route(value = "words", layout = MainLayout.class)
@@ -50,7 +54,8 @@ public class WordsView extends VerticalLayout {
     private final transient TextManagementService textManagementService;
 
     public WordsView(WordFinder wordFinder,
-                     WordManagementService wordManagementService, TextManagementService textManagementService) {
+                     WordManagementService wordManagementService,
+                     TextManagementService textManagementService) {
         this.wordFinder = wordFinder;
         this.wordManagementService = wordManagementService;
         this.textManagementService = textManagementService;
@@ -127,6 +132,11 @@ public class WordsView extends VerticalLayout {
     private void configureGrid() {
         wordGrid.setSizeFull();
         wordGrid.setColumns("name", "frequency");
+
+        wordGrid.addColumn(word -> {
+            List<String> tags = word.getParts().stream().map(PartOfSpeech::getTag).collect(Collectors.toList());
+            return tags.isEmpty() ? " " : String.join(" ", tags);
+        }).setHeader("Part of speech").setAutoWidth(true).setSortable(true);
 
         editorColumn = wordGrid.addComponentColumn(word -> {
             Button editButton = new Button(VaadinIcon.EDIT.create());

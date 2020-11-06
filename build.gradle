@@ -16,6 +16,10 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven {
+	url 'https://mvnrepository.com/artifact/org.apache.opennlp/opennlp-tools'
+
+	}
 }
 
 ext {
@@ -26,6 +30,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'com.vaadin:vaadin-spring-boot-starter'
+	compile group: 'org.apache.opennlp', name: 'opennlp-tools', version: '1.9.2'
 //	implementation 'org.liquibase:liquibase-core'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
