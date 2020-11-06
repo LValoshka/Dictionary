@@ -16,4 +16,12 @@ public class WordFinder {
     public List<Word> findAll() {
         return wordRepository.findAllOrderByName();
     }
+
+    public List<Word> findAllByFilter(String filter) {
+        if(filter.isEmpty()) {
+            return wordRepository.findAllOrderByName();
+        } else {
+            return wordRepository.findAllByFilter(filter);
+        }
+    }
 }

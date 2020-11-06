@@ -20,6 +20,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.StringLengthValidator;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -35,6 +36,7 @@ public class WordsView extends VerticalLayout {
     private final Collection<Button> editButtons = Collections.newSetFromMap(new WeakHashMap<>());
     private final Grid<Word> wordGrid = new Grid<>(Word.class);
     private final TextField nameField = new TextField();
+    private final TextField filterText = new TextField();
     private Grid.Column<Word> editorColumn;
 
     private final Editor<Word> editor = wordGrid.getEditor();
@@ -79,12 +81,18 @@ public class WordsView extends VerticalLayout {
         Word word = new Word();
         word.setName(saveEvent.getWord().getName());
         word.setFrequency(0L);
-        textManagementService.addNewWord(word);
+        wordManagementService.save(word);
         updateList();
         closeCustomEditor();
     }
 
     private HorizontalLayout getToolBar() {
+        filterText.setPlaceholder("Filter by name...");
+        filterText.addThemeName("bordered");
+        filterText.setClearButtonVisible(true);
+        filterText.setValueChangeMode(ValueChangeMode.EAGER);
+        filterText.addValueChangeListener(e -> updateList());
+
         Button update = new Button(VaadinIcon.REFRESH.create());
         update.addClickListener(e -> {
             textManagementService.parseText();
@@ -97,7 +105,7 @@ public class WordsView extends VerticalLayout {
             addWord();
         });
 
-        HorizontalLayout toolBar = new HorizontalLayout(update, addWordButton);
+        HorizontalLayout toolBar = new HorizontalLayout(filterText, addWordButton, update);
         toolBar.expand(addWordButton);
         return toolBar;
     }
@@ -141,7 +149,7 @@ public class WordsView extends VerticalLayout {
     }
 
     private void updateList() {
-        wordGrid.setItems(wordFinder.findAll());
+        wordGrid.setItems(wordFinder.findAllByFilter(filterText.getValue()));
     }
 
 
@@ -160,7 +168,6 @@ public class WordsView extends VerticalLayout {
         editor.addOpenListener(e -> editButtons.forEach(button -> button.setEnabled(!editor.isOpen())));
         editor.addCloseListener(e -> editButtons.forEach(button -> button.setEnabled(!editor.isOpen())));
 
-
         Button save = new Button("Save");
         save.addClickListener(e -> editor.save());
         Button cancel = new Button("Cancel");
@@ -169,18 +176,15 @@ public class WordsView extends VerticalLayout {
         wordGrid.getElement().addEventListener("keyup", event -> editor.cancel())
                 .setFilter("event.key === 'Escape' || event.key === 'Esc'");
 
-
         Div buttons = new Div(save, cancel);
         editorColumn.setEditorComponent(buttons);
 
-        editor.addSaveListener(
-                e -> {
-                    textManagementService.replaceWordFromTextWithNewOne(editingWordName, e.getItem().getName());
-                    editor.cancel();
-                });
+        editor.addSaveListener(e -> {
+            textManagementService.replaceWordFromTextWithNewOne(editingWordName, e.getItem().getName());
+            editor.cancel();
+        });
         add(validationStatus, wordGrid);
     }
-
 
     private Dialog deleteDialog(Word word) {
         Button deleteButton = new Button("delete");
@@ -195,6 +199,5 @@ public class WordsView extends VerticalLayout {
         });
         return dialog;
     }
-
 
 }
