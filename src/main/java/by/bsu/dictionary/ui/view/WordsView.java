@@ -2,7 +2,6 @@ package by.bsu.dictionary.ui.view;
 
 import by.bsu.dictionary.core.model.PartOfSpeech;
 import by.bsu.dictionary.core.model.Word;
-import by.bsu.dictionary.core.service.part_of_speech.PartOfSpeechManagementService;
 import by.bsu.dictionary.core.service.text.TextManagementService;
 import by.bsu.dictionary.core.service.word.WordFinder;
 import by.bsu.dictionary.core.service.word.WordManagementService;
@@ -40,6 +39,7 @@ public class WordsView extends VerticalLayout {
     private final Collection<Button> editButtons = Collections.newSetFromMap(new WeakHashMap<>());
     private final Grid<Word> wordGrid = new Grid<>(Word.class);
     private final TextField nameField = new TextField();
+    private final TextField tagField = new TextField();
     private final TextField filterText = new TextField();
     private Grid.Column<Word> editorColumn;
 
@@ -136,7 +136,7 @@ public class WordsView extends VerticalLayout {
         wordGrid.addColumn(word -> {
             List<String> tags = word.getParts().stream().map(PartOfSpeech::getTag).collect(Collectors.toList());
             return tags.isEmpty() ? " " : String.join(" ", tags);
-        }).setHeader("Part of speech").setAutoWidth(true).setSortable(true);
+        }).setHeader("Tag").setAutoWidth(true).setSortable(true);
 
         editorColumn = wordGrid.addComponentColumn(word -> {
             Button editButton = new Button(VaadinIcon.EDIT.create());
@@ -175,6 +175,11 @@ public class WordsView extends VerticalLayout {
                 .withStatusLabel(validationStatus).bind("name");
         wordGrid.getColumnByKey("name").setEditorComponent(nameField);
 
+//        binder.forField(tagField)
+//                .withValidator(new StringLengthValidator("Tag can not be empty.", 1, 50))
+//                .withStatusLabel(validationStatus).bind("parts");
+//        wordGrid.getColumnByKey("tag").setEditorComponent(tagField);
+
         editor.addOpenListener(e -> editButtons.forEach(button -> button.setEnabled(!editor.isOpen())));
         editor.addCloseListener(e -> editButtons.forEach(button -> button.setEnabled(!editor.isOpen())));
 
@@ -190,7 +195,7 @@ public class WordsView extends VerticalLayout {
         editorColumn.setEditorComponent(buttons);
 
         editor.addSaveListener(e -> {
-            textManagementService.replaceWordFromTextWithNewOne(editingWordName, e.getItem().getName());
+            textManagementService.replaceWordFromTextWithNewOne(editingWordName, e.getItem().getName()); //
             editor.cancel();
         });
         add(validationStatus, wordGrid);

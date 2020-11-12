@@ -6,7 +6,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 public class ConfirmDialog {
-    public static final String EDIT_TEXT = "Are you sure you want to edit the word?";
+    public static final String EDIT_TEXT = "Are you sure you want to edit the text?";
     public static final String DELETE_TEXT = "Are you sure you want to delete the word?";
 
     public static Dialog createDialog(Button actionButton, Button cancel, String text) {

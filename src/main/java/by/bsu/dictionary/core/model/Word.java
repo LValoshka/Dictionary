@@ -18,6 +18,6 @@ public class Word {
 
     private Long frequency;
 
-    @ManyToMany(mappedBy = "words", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "words", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<PartOfSpeech> parts;
 }

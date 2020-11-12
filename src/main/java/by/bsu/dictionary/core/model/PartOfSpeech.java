@@ -16,9 +16,13 @@ public class PartOfSpeech {
 
     private String tag;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @JoinTable(joinColumns = {@JoinColumn(name = "part_id", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "word_id", referencedColumnName = "id")})
     private List<Word> words;
+
+//    public enum Tags {
+//        N, DT, VB, VBD, VBZ, IN, NNP, TO, JJ
+//    }
 
 }

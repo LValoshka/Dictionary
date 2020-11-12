@@ -1,5 +1,8 @@
 package by.bsu.dictionary.core.service.text;
 
+import by.bsu.dictionary.core.model.Word;
+import by.bsu.dictionary.core.repository.PartOfSpeechRepository;
+import by.bsu.dictionary.core.repository.WordRepository;
 import by.bsu.dictionary.core.service.part_of_speech.PartOfSpeechManagementService;
 import by.bsu.dictionary.core.service.word.WordManagementService;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
@@ -10,6 +13,7 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -22,6 +26,8 @@ public class TextManagementService {
 
     private final WordManagementService wordManagementService;
     private final PartOfSpeechManagementService partOfSpeechManagementService;
+    private final WordRepository wordRepository;
+    private final PartOfSpeechRepository partOfSpeechRepository;
     public static String globalText = "";
 
 
@@ -48,19 +54,6 @@ public class TextManagementService {
         saveEditedWord(oldWord, newWord);
     }
 
-    public StringBuilder uploadText() {
-        File file = new File("/home/luba/IdeaProjects/Dictionary/text.txt");
-        String st;
-        StringBuilder stringBuilder = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            while ((st = br.readLine()) != null) {
-                stringBuilder.append(st);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return stringBuilder;
-    }
 
     public String uploadTextFromHome(MemoryBuffer memoryBuffer) {
         globalText = new BufferedReader(new InputStreamReader(memoryBuffer.getInputStream()))
@@ -87,14 +80,7 @@ public class TextManagementService {
 
     public void parseText() {
         String[] words = globalText.split("\\W+");
-        Map<String, List<String>> namePartOfSpeech = new HashMap<>();
-        Arrays.stream(words).forEach(str -> {
-            String[] parsedStr = str.split("_");
-            String name = parsedStr[0];
-            String partOfSpeech = parsedStr[1];
-
-            namePartOfSpeech.put(name, Collections.singletonList(partOfSpeech));
-        });
+        Map<String, List<String>> namePartOfSpeech = parseNameTag(Arrays.asList(words));
 
         Map<String, Long> nameFrequency = namePartOfSpeech.keySet().stream()
                 .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
@@ -104,6 +90,38 @@ public class TextManagementService {
 
     public void saveEditedWord(String oldWord, String newWord) {
         wordManagementService.saveEditedWord(oldWord, newWord);
+    }
+
+    public Collection<String> getDifference(String newValue, String oldValue) {
+        List<String> newValues = Arrays.asList(newValue.split(" "));
+        List<String> oldValues = Arrays.asList(oldValue.split(" "));
+        return CollectionUtils.subtract(newValues, oldValues);
+    }
+
+    public void parseEditedWord(String newValue, String oldValue) {
+        Collection<String> words = getDifference(newValue, oldValue);
+        Map<String, List<String>> nameTag = parseNameTag(words);
+        nameTag.forEach((name, tags) -> {
+            Optional<Word> wordOptional = wordRepository.findByName(name);
+//            wordOptional.ifPresentOrElse(word -> {
+////                Optional<PartOfSpeech> partOfSpeechOptional = partOfSpeechRepository.findByWord(word);
+//                word.set
+//            }, () - < {});
+        });
+
+    }
+
+    public Map<String, List<String>> parseNameTag(Collection<String> words) {
+        Map<String, List<String>> nameTag = new HashMap<>();
+
+        words.forEach(str -> {
+            String[] parsedStr = str.split("_");
+            String name = parsedStr[0];
+            String partOfSpeech = parsedStr[1];
+
+            nameTag.put(name, Collections.singletonList(partOfSpeech));
+        });
+        return nameTag;
     }
 
     @SneakyThrows

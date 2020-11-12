@@ -2,7 +2,11 @@ package by.bsu.dictionary.ui.view;
 
 import by.bsu.dictionary.core.service.text.TextManagementService;
 import by.bsu.dictionary.ui.MainLayout;
+import by.bsu.dictionary.ui.dialog.ConfirmDialog;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -21,13 +25,20 @@ public class TextView extends VerticalLayout {
     private final transient TextManagementService textManagementService;
     private final MemoryBuffer memoryBuffer = new MemoryBuffer();
     private final Upload upload = new Upload(memoryBuffer);
+    private final Button saveButton = new Button("Save");
     private String textInField;
 
     public TextView(TextManagementService textManagementService) {
         this.textManagementService = textManagementService;
-        add(getToolBar(), textArea);
+        add(getToolBar(), textArea, saveButton);
         uploadFile();
         setTextToTextArea(TextManagementService.globalText);
+        textEdit();
+    }
+
+    private void textEdit() {
+        textArea.addValueChangeListener(e -> textInField = e.getValue());
+        saveButton.addClickListener(e -> saveDialog().open());
     }
 
     private HorizontalLayout getToolBar() {
@@ -51,7 +62,20 @@ public class TextView extends VerticalLayout {
 
     private void setTextToTextArea(String text) {
         textArea.setValue(text);
-        textArea.setReadOnly(true);
         textArea.setSizeFull();
+    }
+
+    private Dialog saveDialog() {
+        Button saveButton = new Button("Save");
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        Button cancelButton = new Button("Cancel");
+        com.vaadin.flow.component.dialog.Dialog dialog = ConfirmDialog.createDialog(saveButton, cancelButton, ConfirmDialog.EDIT_TEXT);
+        saveButton.addClickListener(e -> {
+            TextManagementService.globalText = textInField;
+            dialog.close();
+            Notification not = new Notification("Saved!", 5);
+            not.open();
+        });
+        return dialog;
     }
 }
