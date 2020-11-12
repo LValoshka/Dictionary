@@ -119,8 +119,15 @@ public class TextManagementService {
             String name = parsedStr[0];
             String partOfSpeech = parsedStr[1];
 
-            nameTag.put(name, Collections.singletonList(partOfSpeech));
+            if (nameTag.containsKey(name)) {
+                nameTag.get(name).add(partOfSpeech);
+            } else {
+                List<String> list = new ArrayList<>();
+                list.add(partOfSpeech);
+                nameTag.put(name, list);
+            }
         });
+        nameTag.forEach((key, value) -> System.out.println("key: " + key + " value: " + value));
         return nameTag;
     }
 

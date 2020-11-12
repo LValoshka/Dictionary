@@ -46,7 +46,6 @@ public class TextView extends VerticalLayout {
         tokenize.addClickListener(e -> {
             setTextToTextArea(textManagementService.tokenizeText(textInField));
             textInField = TextManagementService.globalText;
-            System.out.println(TextManagementService.globalText);
         });
         return new HorizontalLayout(upload, tokenize);
     }
