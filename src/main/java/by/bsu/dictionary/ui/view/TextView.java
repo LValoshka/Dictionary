@@ -26,7 +26,9 @@ public class TextView extends VerticalLayout {
     private final MemoryBuffer memoryBuffer = new MemoryBuffer();
     private final Upload upload = new Upload(memoryBuffer);
     private final Button saveButton = new Button("Save");
+    private final Notification notification = new Notification("Such tag doesn't exist! Please, use tags from info.", 3000);
     private String textInField;
+    private String oldValue;
 
     public TextView(TextManagementService textManagementService) {
         this.textManagementService = textManagementService;
@@ -37,14 +39,17 @@ public class TextView extends VerticalLayout {
     }
 
     private void textEdit() {
-        textArea.addValueChangeListener(e -> textInField = e.getValue());
+        textArea.addValueChangeListener(e -> {
+            textInField = e.getValue();
+            oldValue = e.getOldValue();
+        });
         saveButton.addClickListener(e -> saveDialog().open());
     }
 
     private HorizontalLayout getToolBar() {
         Button tokenize = new Button("Tokenize");
         tokenize.addClickListener(e -> {
-            setTextToTextArea(textManagementService.tokenizeText(textInField));
+            setTextToTextArea(textManagementService.tokenizeText(textInField.replaceAll("[^a-zA-Z0-9]", " ")));
             textInField = TextManagementService.globalText;
         });
         return new HorizontalLayout(upload, tokenize);
@@ -68,12 +73,16 @@ public class TextView extends VerticalLayout {
         Button saveButton = new Button("Save");
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         Button cancelButton = new Button("Cancel");
-        com.vaadin.flow.component.dialog.Dialog dialog = ConfirmDialog.createDialog(saveButton, cancelButton, ConfirmDialog.EDIT_TEXT);
+        Dialog dialog = ConfirmDialog.createDialog(saveButton, cancelButton, ConfirmDialog.EDIT_TEXT);
         saveButton.addClickListener(e -> {
             TextManagementService.globalText = textInField;
+            textManagementService.deleteAll();
+            if (!textManagementService.parseText()) {
+                System.out.println("in ex");
+                notification.open();
+            }
+//            textManagementService.parseEditedWord(textInField, oldValue);
             dialog.close();
-            Notification not = new Notification("Saved!", 5);
-            not.open();
         });
         return dialog;
     }

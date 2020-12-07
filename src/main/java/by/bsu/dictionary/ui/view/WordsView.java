@@ -1,6 +1,5 @@
 package by.bsu.dictionary.ui.view;
 
-import by.bsu.dictionary.core.model.PartOfSpeech;
 import by.bsu.dictionary.core.model.Word;
 import by.bsu.dictionary.core.service.text.TextManagementService;
 import by.bsu.dictionary.core.service.word.WordFinder;
@@ -86,6 +85,8 @@ public class WordsView extends VerticalLayout {
         Word word = new Word();
         word.setName(saveEvent.getWord().getName());
         word.setFrequency(0L);
+        word.setTags(saveEvent.getWord().getTags());
+
         wordManagementService.save(word);
         updateList();
         closeCustomEditor();
@@ -100,6 +101,7 @@ public class WordsView extends VerticalLayout {
 
         Button update = new Button(VaadinIcon.REFRESH.create());
         update.addClickListener(e -> {
+            textManagementService.deleteAll();
             textManagementService.parseText();
             updateList();
         });
@@ -134,8 +136,8 @@ public class WordsView extends VerticalLayout {
         wordGrid.setColumns("name", "frequency");
 
         wordGrid.addColumn(word -> {
-            List<String> tags = word.getParts().stream().map(PartOfSpeech::getTag).collect(Collectors.toList());
-            return tags.isEmpty() ? " " : String.join(" ", tags);
+            List<String> tags = word.getTags().stream().map(Enum::name).collect(Collectors.toList());
+            return tags.isEmpty() ? " " : String.join(",", tags);
         }).setHeader("Tag").setAutoWidth(true).setSortable(true);
 
         editorColumn = wordGrid.addComponentColumn(word -> {
@@ -174,11 +176,6 @@ public class WordsView extends VerticalLayout {
                 .withValidator(new StringLengthValidator("Name can not be empty.", 1, 50))
                 .withStatusLabel(validationStatus).bind("name");
         wordGrid.getColumnByKey("name").setEditorComponent(nameField);
-
-//        binder.forField(tagField)
-//                .withValidator(new StringLengthValidator("Tag can not be empty.", 1, 50))
-//                .withStatusLabel(validationStatus).bind("parts");
-//        wordGrid.getColumnByKey("tag").setEditorComponent(tagField);
 
         editor.addOpenListener(e -> editButtons.forEach(button -> button.setEnabled(!editor.isOpen())));
         editor.addCloseListener(e -> editButtons.forEach(button -> button.setEnabled(!editor.isOpen())));

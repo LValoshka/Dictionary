@@ -6,17 +6,21 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
+import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 
+import java.util.Collections;
+
 public class WordCreationForm extends FormLayout {
 
     private final TextField name = new TextField("Name");
+    private final CheckboxGroup<Word.Tags> tags = new CheckboxGroup<>();
 
     private final Binder<Word> binder = new Binder<>(Word.class);
     private final Button save = new Button("Save");
@@ -26,11 +30,22 @@ public class WordCreationForm extends FormLayout {
 
     public WordCreationForm() {
         binder.bindInstanceFields(this);
-        add(name, createButtonsLayout());
+
+        tags.setLabel("Tags");
+        tags.setItems(Word.Tags.values());
+        tags.setValue(Collections.singleton(Word.Tags.DT));
+        tags.addThemeVariants(CheckboxGroupVariant.MATERIAL_VERTICAL);
+        tags.setRequired(true);
+        name.setRequired(true);
+
+        add(name, tags, createButtonsLayout());
 
         binder.forField(name)
                 .asRequired("Field can not be empty!")
                 .bind(Word::getName, Word::setName);
+//        binder.forField(name)
+//                .asRequired("Field can not be empty!")
+//                .bind(Word::getName, Word::setName);
     }
 
     private HorizontalLayout createButtonsLayout() {

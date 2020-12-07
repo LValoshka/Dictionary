@@ -1,9 +1,7 @@
 package by.bsu.dictionary.core.service.text;
 
 import by.bsu.dictionary.core.model.Word;
-import by.bsu.dictionary.core.repository.PartOfSpeechRepository;
 import by.bsu.dictionary.core.repository.WordRepository;
-import by.bsu.dictionary.core.service.part_of_speech.PartOfSpeechManagementService;
 import by.bsu.dictionary.core.service.word.WordManagementService;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import lombok.RequiredArgsConstructor;
@@ -25,30 +23,23 @@ import java.util.stream.Collectors;
 public class TextManagementService {
 
     private final WordManagementService wordManagementService;
-    private final PartOfSpeechManagementService partOfSpeechManagementService;
+    //    private final PartOfSpeechManagementService partOfSpeechManagementService;
     private final WordRepository wordRepository;
-    private final PartOfSpeechRepository partOfSpeechRepository;
+    //    private final PartOfSpeechRepository partOfSpeechRepository;
     public static String globalText = "";
 
 
     public void deleteWordFromText(String oldWord) {
-        if (globalText.contains(oldWord)) {
-            String tempWord = oldWord + " ";
-            globalText = globalText.replaceAll(tempWord, " ");
 
-            tempWord = " " + oldWord;
-            globalText = globalText.replaceAll(tempWord, " ");
+        if (globalText.contains(oldWord + "_")) {
+            globalText = globalText.replaceAll("(" + oldWord + "_)([A-Z]+)\\b", " ");
         }
         saveTextToFile(globalText);
     }
 
     public void replaceWordFromTextWithNewOne(String oldWord, String newWord) {
-        if (globalText.contains(" " + oldWord + " ")) {
-            String tempWord = oldWord + " ";
-            globalText = globalText.replaceAll(tempWord, " " + newWord + " ");
-
-            tempWord = " " + oldWord;
-            globalText = globalText.replaceAll(tempWord, " " + newWord + " ");
+        if (globalText.contains(" " + oldWord) || globalText.contains(oldWord + " ")) {
+            globalText = globalText.replaceAll(oldWord, newWord);
         }
         saveTextToFile(globalText);
         saveEditedWord(oldWord, newWord);
@@ -78,14 +69,17 @@ public class TextManagementService {
         return globalText;
     }
 
-    public void parseText() {
-        String[] words = globalText.split("\\W+");
+    public boolean parseText() {
+        String[] words = globalText.split("[\\s|(,\\s)]+");
+        for (String s : words) {
+            System.out.println(s);
+        }
         Map<String, List<String>> namePartOfSpeech = parseNameTag(Arrays.asList(words));
 
         Map<String, Long> nameFrequency = namePartOfSpeech.keySet().stream()
                 .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
-        wordManagementService.save(nameFrequency);
-        partOfSpeechManagementService.save(namePartOfSpeech);
+        wordManagementService.saveNameFrequency(nameFrequency);
+        return wordManagementService.saveNameTag(namePartOfSpeech);
     }
 
     public void saveEditedWord(String oldWord, String newWord) {
@@ -98,18 +92,31 @@ public class TextManagementService {
         return CollectionUtils.subtract(newValues, oldValues);
     }
 
-    public void parseEditedWord(String newValue, String oldValue) {
-        Collection<String> words = getDifference(newValue, oldValue);
-        Map<String, List<String>> nameTag = parseNameTag(words);
-        nameTag.forEach((name, tags) -> {
-            Optional<Word> wordOptional = wordRepository.findByName(name);
-//            wordOptional.ifPresentOrElse(word -> {
-////                Optional<PartOfSpeech> partOfSpeechOptional = partOfSpeechRepository.findByWord(word);
-//                word.set
-//            }, () - < {});
-        });
-
-    }
+//    public void parseEditedWord(String newValue, String oldValue) {
+//        Collection<String> words = getDifference(newValue, oldValue);
+//        Map<String, List<String>> newNameTag = parseNameTag(words);
+//        List<Word.Tags> oldTags = wordManagementService.getByName(oldValue.split("_")[0]);
+//        newNameTag.forEach((newName, newTags) -> {
+//            Optional<Word> wordOptional = wordRepository.findByName(newName);
+//            wordOptional.ifPresent(word -> {
+////                List<String> tagsByWord = word.getParts().stream().map(PartOfSpeech::getTag).collect(Collectors.toList());
+////                Collection<String> coll = CollectionUtils.subtract(tags, tagsByWord);
+//                if(!coll.isEmpty()){
+//
+//                    System.out.println("here");
+//                    System.out.println("diff "+coll.toString());
+//                    System.out.println("name: "+newName);
+//                    System.out.println("new tags: "+newTags.toString());
+//                    System.out.println("old tags: "+tagsByWord.toString());
+//                    Map<String, List<String>> map = new HashMap<>();
+//                    map.put(word.getName(), newTags);
+////                    partOfSpeechManagementService.save(map);
+//                    wordManagementService.save(word);
+//                }
+//            });
+//        });
+//
+//    }
 
     public Map<String, List<String>> parseNameTag(Collection<String> words) {
         Map<String, List<String>> nameTag = new HashMap<>();
@@ -140,4 +147,12 @@ public class TextManagementService {
         fileWriter.close();
     }
 
+    public void deleteAll() {
+        String[] words = globalText.split("\\W+");
+        Map<String, List<String>> namePartOfSpeech = parseNameTag(Arrays.asList(words));
+        namePartOfSpeech.forEach((name, value) -> {
+            Optional<Word> wordOptional = wordRepository.findByName(name);
+            wordOptional.ifPresent(wordRepository::delete);
+        });
+    }
 }

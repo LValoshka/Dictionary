@@ -3,18 +3,24 @@ package by.bsu.dictionary.core.service.word;
 import by.bsu.dictionary.core.model.Word;
 import by.bsu.dictionary.core.repository.WordRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WordManagementService {
 
     private final WordRepository wordRepository;
 
-    public void save(Map<String, Long> words) {
+    public void saveNameFrequency(Map<String, Long> words) {
         words.forEach((key, value) -> {
             Word word = new Word();
             word.setName(key);
@@ -23,11 +29,29 @@ public class WordManagementService {
         });
     }
 
+    public boolean saveNameTag(Map<String, List<String>> words) {
+        AtomicBoolean res = new AtomicBoolean(true);
+        words.forEach((key, value) -> {
+            wordRepository.findByName(key).ifPresent(word -> {
+                word.setName(key);
+                try {
+                    Set<Word.Tags> tags = value.stream().map(Word.Tags::valueOf).collect(Collectors.toSet());
+                    word.setTags(tags);
+                    wordRepository.save(word);
+                } catch (RuntimeException e) {
+                    res.set(false);
+                    log.error("Can't parse new string");
+                }
+            });
+        });
+        return res.get();
+    }
+
     public void delete(Word word) {
         wordRepository.delete(word);
     }
 
-    public void save(Word word){
+    public void save(Word word) {
         wordRepository.save(word);
     }
 
@@ -37,5 +61,10 @@ public class WordManagementService {
             word.setName(newWord);
             wordRepository.save(word);
         });
+    }
+
+    public Set<Word.Tags> getByName(String name) {
+        return wordRepository.findByName(name).get().getTags();
+
     }
 }
