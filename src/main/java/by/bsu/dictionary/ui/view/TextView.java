@@ -49,8 +49,9 @@ public class TextView extends VerticalLayout {
     private HorizontalLayout getToolBar() {
         Button tokenize = new Button("Tokenize");
         tokenize.addClickListener(e -> {
-            setTextToTextArea(textManagementService.tokenizeText(textInField.replaceAll("[^a-zA-Z0-9]", " ")));
+            textManagementService.tokenizeSelectedText(textInField.replaceAll("[^a-zA-Z0-9]", " "));
             textInField = TextManagementService.globalText;
+            setTextToTextArea(textInField);
         });
         return new HorizontalLayout(upload, tokenize);
     }

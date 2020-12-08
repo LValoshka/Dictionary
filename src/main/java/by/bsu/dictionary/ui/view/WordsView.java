@@ -133,7 +133,7 @@ public class WordsView extends VerticalLayout {
 
     private void configureGrid() {
         wordGrid.setSizeFull();
-        wordGrid.setColumns("name", "frequency");
+        wordGrid.setColumns("name", "frequency", "lemma");
 
         wordGrid.addColumn(word -> {
             List<String> tags = word.getTags().stream().map(Enum::name).collect(Collectors.toList());

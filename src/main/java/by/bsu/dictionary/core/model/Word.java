@@ -19,6 +19,8 @@ public class Word {
 
     private Long frequency;
 
+    private String lemma;
+
 //    @ManyToMany(mappedBy = "words", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 //    private List<PartOfSpeech> parts;
 

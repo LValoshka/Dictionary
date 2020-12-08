@@ -6,6 +6,7 @@ import by.bsu.dictionary.core.service.word.WordManagementService;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTagger;
@@ -27,7 +28,6 @@ public class TextManagementService {
     private final WordRepository wordRepository;
     //    private final PartOfSpeechRepository partOfSpeechRepository;
     public static String globalText = "";
-
 
     public void deleteWordFromText(String oldWord) {
 
@@ -53,24 +53,13 @@ public class TextManagementService {
     }
 
     @SneakyThrows
-    public String tokenizeText(String text) {
-        InputStream inputStream = new FileInputStream("/home/luba/IdeaProjects/Dictionary/en-pos-maxent.bin");
-        POSModel model = new POSModel(inputStream);
-        POSTagger tagger = new POSTaggerME(model);
-
-        WhitespaceTokenizer whitespaceTokenizer = WhitespaceTokenizer.INSTANCE;
-        String[] tokens = whitespaceTokenizer.tokenize(text);
-
-        String[] tags = tagger.tag(tokens);
-
-        POSSample sample = new POSSample(tokens, tags);
-
-        globalText = sample.toString();
+    public String tokenizeSelectedText(String text) {
+        globalText = tokenize(text);
         return globalText;
     }
 
     public boolean parseText() {
-        String[] words = globalText.split("[\\s|(,\\s)]+");
+        String[] words = globalText.split("[\\s|(,)]+");
         for (String s : words) {
             System.out.println(s);
         }
@@ -79,11 +68,43 @@ public class TextManagementService {
         Map<String, Long> nameFrequency = namePartOfSpeech.keySet().stream()
                 .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
         wordManagementService.saveNameFrequency(nameFrequency);
+        createLemmasForWord(namePartOfSpeech);
         return wordManagementService.saveNameTag(namePartOfSpeech);
     }
 
     public void saveEditedWord(String oldWord, String newWord) {
         wordManagementService.saveEditedWord(oldWord, newWord);
+    }
+
+    @SneakyThrows
+    private void createLemmasForWord(Map<String, List<String>> nameTag) {
+        String[] tokens = nameTag.keySet().toArray(new String[0]);
+        String[] tags = nameTag.values().stream().map(tagList -> tagList.get(0)).toArray(String[]::new);
+        System.out.println(Arrays.toString(tokens));
+        System.out.println(Arrays.toString(tags));
+
+        InputStream lemmaModelIn = new FileInputStream("en-lemmatizer.dict");
+        DictionaryLemmatizer lemmatizer = new DictionaryLemmatizer(lemmaModelIn);
+
+        String[] lemmas = lemmatizer.lemmatize(tokens, tags);
+        String[] taggedLemmas = tokenize(String.join(" ", lemmas)).split(" ");
+
+        wordManagementService.saveNameLemma(tokens, taggedLemmas); //TODO: think of how to improve it
+        System.out.println(Arrays.toString(taggedLemmas));
+    }
+
+    @SneakyThrows
+    private String tokenize(String text) {
+        InputStream posModelIn = new FileInputStream("en-pos-maxent.bin");
+        POSModel model = new POSModel(posModelIn);
+        POSTagger tagger = new POSTaggerME(model);
+
+        WhitespaceTokenizer whitespaceTokenizer = WhitespaceTokenizer.INSTANCE;
+        String[] tokens = whitespaceTokenizer.tokenize(text);
+        String[] tags = tagger.tag(tokens);
+
+        POSSample sample = new POSSample(tokens, tags);
+        return sample.toString();
     }
 
     public Collection<String> getDifference(String newValue, String oldValue) {

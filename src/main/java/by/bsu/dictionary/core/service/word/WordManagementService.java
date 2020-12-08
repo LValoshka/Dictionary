@@ -63,8 +63,16 @@ public class WordManagementService {
         });
     }
 
-    public Set<Word.Tags> getByName(String name) {
-        return wordRepository.findByName(name).get().getTags();
+    public Word getByName(String name) {
+        return wordRepository.findByName(name).orElseThrow();
 
+    }
+
+    public void saveNameLemma(String[] tokens, String[] lemmas) { //TODO: REWRITE IT, PLEASE!!!
+        for (int i = 0; i < tokens.length; i++) {
+            Word word = getByName(tokens[i]);
+            word.setLemma(lemmas[i]);
+            save(word);
+        }
     }
 }
