@@ -26,7 +26,9 @@ import com.vaadin.flow.router.Route;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 
 @Route(value = "words", layout = MainLayout.class)
@@ -36,6 +38,7 @@ public class WordsView extends VerticalLayout {
     private final Collection<Button> editButtons = Collections.newSetFromMap(new WeakHashMap<>());
     private final Grid<Word> wordGrid = new Grid<>(Word.class);
     private final TextField nameField = new TextField();
+    private final TextField tagField = new TextField();
     private final TextField filterText = new TextField();
     private Grid.Column<Word> editorColumn;
 
@@ -50,7 +53,8 @@ public class WordsView extends VerticalLayout {
     private final transient TextManagementService textManagementService;
 
     public WordsView(WordFinder wordFinder,
-                     WordManagementService wordManagementService, TextManagementService textManagementService) {
+                     WordManagementService wordManagementService,
+                     TextManagementService textManagementService) {
         this.wordFinder = wordFinder;
         this.wordManagementService = wordManagementService;
         this.textManagementService = textManagementService;
@@ -81,6 +85,8 @@ public class WordsView extends VerticalLayout {
         Word word = new Word();
         word.setName(saveEvent.getWord().getName());
         word.setFrequency(0L);
+        word.setTags(saveEvent.getWord().getTags());
+
         wordManagementService.save(word);
         updateList();
         closeCustomEditor();
@@ -95,6 +101,7 @@ public class WordsView extends VerticalLayout {
 
         Button update = new Button(VaadinIcon.REFRESH.create());
         update.addClickListener(e -> {
+            textManagementService.deleteAll();
             textManagementService.parseText();
             updateList();
         });
@@ -126,7 +133,12 @@ public class WordsView extends VerticalLayout {
 
     private void configureGrid() {
         wordGrid.setSizeFull();
-        wordGrid.setColumns("name", "frequency");
+        wordGrid.setColumns("name", "frequency", "lemma");
+
+        wordGrid.addColumn(word -> {
+            List<String> tags = word.getTags().stream().map(Enum::name).collect(Collectors.toList());
+            return tags.isEmpty() ? " " : String.join(",", tags);
+        }).setHeader("Tag").setAutoWidth(true).setSortable(true);
 
         editorColumn = wordGrid.addComponentColumn(word -> {
             Button editButton = new Button(VaadinIcon.EDIT.create());
@@ -180,7 +192,7 @@ public class WordsView extends VerticalLayout {
         editorColumn.setEditorComponent(buttons);
 
         editor.addSaveListener(e -> {
-            textManagementService.replaceWordFromTextWithNewOne(editingWordName, e.getItem().getName());
+            textManagementService.replaceWordFromTextWithNewOne(editingWordName, e.getItem().getName()); //
             editor.cancel();
         });
         add(validationStatus, wordGrid);
