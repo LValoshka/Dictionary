@@ -1,4 +1,4 @@
 # Dictionary
 Lab for university course
 
-Spring Boot, Hibernate + Vaadin
+Place files "en-pos-maxent.bin", "en-lemmatizer.dict" in project root before starting.
