@@ -89,6 +89,9 @@ public class TextManagementService {
         String[] lemmas = lemmatizer.lemmatize(tokens, tags);
         String[] taggedLemmas = tokenize(String.join(" ", lemmas)).split(" ");
 
+        System.out.println("tagged lemmas");
+        Arrays.stream(taggedLemmas).forEach(System.out::println);
+
         wordManagementService.saveNameLemma(tokens, taggedLemmas); //TODO: think of how to improve it
         System.out.println(Arrays.toString(taggedLemmas));
     }

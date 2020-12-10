@@ -47,14 +47,6 @@ public class WordManagementService {
         return res.get();
     }
 
-    public void delete(Word word) {
-        wordRepository.delete(word);
-    }
-
-    public void save(Word word) {
-        wordRepository.save(word);
-    }
-
     public void saveEditedWord(String oldWord, String newWord) {
         Optional<Word> wordOpt = wordRepository.findByName(oldWord);
         wordOpt.ifPresent(word -> {
@@ -63,16 +55,33 @@ public class WordManagementService {
         });
     }
 
-    public Word getByName(String name) {
-        return wordRepository.findByName(name).orElseThrow();
-
-    }
-
     public void saveNameLemma(String[] tokens, String[] lemmas) { //TODO: REWRITE IT, PLEASE!!!
         for (int i = 0; i < tokens.length; i++) {
             Word word = getByName(tokens[i]);
             word.setLemma(lemmas[i]);
             save(word);
         }
+    }
+
+    public void save(Word word) {
+        wordRepository.save(word);
+    }
+
+    public void delete(Word word) {
+        wordRepository.delete(word);
+    }
+
+    public Word getByName(String name) {
+        return wordRepository.findByName(name).orElseThrow();
+    }
+
+    public List<Word> findAll() {
+        return wordRepository.findAll();
+    }
+
+    public void saveWordWithNewLemma(String name, String lemma) {
+        Word word = getByName(name);
+        word.setLemma(lemma);
+        save(word);
     }
 }

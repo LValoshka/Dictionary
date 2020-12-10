@@ -38,12 +38,13 @@ public class WordsView extends VerticalLayout {
     private final Collection<Button> editButtons = Collections.newSetFromMap(new WeakHashMap<>());
     private final Grid<Word> wordGrid = new Grid<>(Word.class);
     private final TextField nameField = new TextField();
-    private final TextField tagField = new TextField();
+    private final TextField lemmaField = new TextField();
     private final TextField filterText = new TextField();
     private Grid.Column<Word> editorColumn;
 
     private final Editor<Word> editor = wordGrid.getEditor();
     private transient String editingWordName;
+    private transient String editingWordLemma;
 
     private WordCreationForm wordForm;
     private Dialog creationDialog;
@@ -86,6 +87,7 @@ public class WordsView extends VerticalLayout {
         word.setName(saveEvent.getWord().getName());
         word.setFrequency(0L);
         word.setTags(saveEvent.getWord().getTags());
+        word.setLemma(saveEvent.getWord().getLemma());
 
         wordManagementService.save(word);
         updateList();
@@ -144,6 +146,7 @@ public class WordsView extends VerticalLayout {
             Button editButton = new Button(VaadinIcon.EDIT.create());
             editButton.addClickListener(e -> {
                 editingWordName = word.getName();
+                editingWordLemma = word.getLemma();
                 editor.editItem(word);
                 nameField.focus();
             });
@@ -176,6 +179,11 @@ public class WordsView extends VerticalLayout {
                 .withValidator(new StringLengthValidator("Name can not be empty.", 1, 50))
                 .withStatusLabel(validationStatus).bind("name");
         wordGrid.getColumnByKey("name").setEditorComponent(nameField);
+        binder.forField(lemmaField)
+                .withValidator(new StringLengthValidator("Lemma can not be empty.", 1, 50))
+                .withStatusLabel(validationStatus).bind("lemma");
+        wordGrid.getColumnByKey("lemma").setEditorComponent(lemmaField);
+
 
         editor.addOpenListener(e -> editButtons.forEach(button -> button.setEnabled(!editor.isOpen())));
         editor.addCloseListener(e -> editButtons.forEach(button -> button.setEnabled(!editor.isOpen())));
@@ -193,6 +201,7 @@ public class WordsView extends VerticalLayout {
 
         editor.addSaveListener(e -> {
             textManagementService.replaceWordFromTextWithNewOne(editingWordName, e.getItem().getName()); //
+            wordManagementService.saveWordWithNewLemma(e.getItem().getName(), e.getItem().getLemma());
             editor.cancel();
         });
         add(validationStatus, wordGrid);
