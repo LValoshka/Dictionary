@@ -32,8 +32,11 @@ public class MainLayout extends AppLayout {
             dialog.setDraggable(true);
             dialog.open();
         });
+        Button statButton = new Button(VaadinIcon.STAR_HALF_LEFT.create());
+        statButton.addClickListener(e -> UI.getCurrent().navigate("stat"));
 
-        HorizontalLayout header = new HorizontalLayout(textButton, tableButton, info);
+
+        HorizontalLayout header = new HorizontalLayout(textButton, tableButton, info, statButton);
         header.addClassName("header");
         header.setWidth("100%");
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);

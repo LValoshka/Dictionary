@@ -24,9 +24,7 @@ import java.util.stream.Collectors;
 public class TextManagementService {
 
     private final WordManagementService wordManagementService;
-    //    private final PartOfSpeechManagementService partOfSpeechManagementService;
     private final WordRepository wordRepository;
-    //    private final PartOfSpeechRepository partOfSpeechRepository;
     public static String globalText = "";
 
     public void deleteWordFromText(String oldWord) {
@@ -45,7 +43,6 @@ public class TextManagementService {
         saveEditedWord(oldWord, newWord);
     }
 
-
     public String uploadTextFromHome(MemoryBuffer memoryBuffer) {
         globalText = new BufferedReader(new InputStreamReader(memoryBuffer.getInputStream()))
                 .lines().collect(Collectors.joining("\n"));
@@ -53,9 +50,8 @@ public class TextManagementService {
     }
 
     @SneakyThrows
-    public String tokenizeSelectedText(String text) {
+    public void tokenizeSelectedText(String text) {
         globalText = tokenize(text);
-        return globalText;
     }
 
     public boolean parseText() {
