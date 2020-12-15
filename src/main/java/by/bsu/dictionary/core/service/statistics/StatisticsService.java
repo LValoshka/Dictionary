@@ -1,6 +1,8 @@
 package by.bsu.dictionary.core.service.statistics;
 
+import by.bsu.dictionary.core.model.TagFrequencyStat;
 import by.bsu.dictionary.core.model.Word;
+import by.bsu.dictionary.core.service.tagFrequency.TagFrequencyService;
 import by.bsu.dictionary.core.service.word.WordManagementService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,14 +18,18 @@ public class StatisticsService {
 
     private final WordManagementService wordManagementService;
 
-    public Map<String, Long> tagFrequencyStat() {
+    private final TagFrequencyService tagFrequencyService;
+
+    public void tagFrequencyStatCount() {
         List<Word.Tags> tagsList = new ArrayList<>();
         wordManagementService.findAll().forEach(
                 word -> tagsList.addAll(word.getTags()));
         Map<String, Long> map = tagsList.stream().collect(Collectors.groupingBy(Word.Tags::name, Collectors.counting()));
-        System.out.println("in stat");
-        System.out.println(map.toString());
-        return map;
+        tagFrequencyService.save(map);
+    }
+
+    public List<TagFrequencyStat> findAllTagFrequencyStat() {
+        return tagFrequencyService.findAll();
     }
 
 }

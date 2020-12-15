@@ -53,6 +53,7 @@ public class WordManagementService {
             word.setName(newWord);
             wordRepository.save(word);
         });
+
     }
 
     public void saveNameLemma(String[] tokens, String[] lemmas) { //TODO: REWRITE IT, PLEASE!!!
