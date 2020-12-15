@@ -34,9 +34,12 @@ public class MainLayout extends AppLayout {
         });
         Button statButton = new Button(VaadinIcon.STAR_HALF_LEFT.create());
         statButton.addClickListener(e -> UI.getCurrent().navigate("stat"));
+        Button nameTagButton = new Button("Name-tag");
+        nameTagButton.addClickListener(e -> UI.getCurrent().navigate("nameTag"));
 
 
-        HorizontalLayout header = new HorizontalLayout(textButton, tableButton, info, statButton);
+        HorizontalLayout header = new HorizontalLayout(textButton, tableButton, info,
+                statButton, nameTagButton);
         header.addClassName("header");
         header.setWidth("100%");
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
