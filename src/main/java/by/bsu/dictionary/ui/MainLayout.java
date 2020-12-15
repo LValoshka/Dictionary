@@ -36,10 +36,12 @@ public class MainLayout extends AppLayout {
         statButton.addClickListener(e -> UI.getCurrent().navigate("stat"));
         Button nameTagButton = new Button("Name-tag");
         nameTagButton.addClickListener(e -> UI.getCurrent().navigate("nameTag"));
+        Button tagsButton = new Button("Tags");
+        tagsButton.addClickListener(e -> UI.getCurrent().navigate("tags"));
 
 
         HorizontalLayout header = new HorizontalLayout(textButton, tableButton, info,
-                statButton, nameTagButton);
+                statButton, nameTagButton, tagsButton);
         header.addClassName("header");
         header.setWidth("100%");
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
