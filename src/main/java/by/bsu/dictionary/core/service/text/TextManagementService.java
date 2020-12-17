@@ -36,11 +36,11 @@ public class TextManagementService {
     }
 
     public void replaceWordFromTextWithNewOne(String oldWord, String newWord) {
-        if (globalText.contains(" " + oldWord) || globalText.contains(oldWord + " ")) {
-            globalText = globalText.replaceAll(oldWord, newWord);
+        if (globalText.contains(" " + oldWord + "_")) {
+            globalText = globalText.replaceAll(oldWord + "_", newWord + "_");
+            saveTextToFile(globalText);
+            saveEditedWord(oldWord, newWord);
         }
-        saveTextToFile(globalText);
-        saveEditedWord(oldWord, newWord);
     }
 
     public String uploadTextFromHome(MemoryBuffer memoryBuffer) {
