@@ -15,6 +15,8 @@ public class TagsFrequency {
 
     private String tags;
 
+    private String tag;
+
     private Long frequency;
 }
 
