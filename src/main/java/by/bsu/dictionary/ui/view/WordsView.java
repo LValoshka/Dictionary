@@ -85,7 +85,11 @@ public class WordsView extends VerticalLayout {
         word.setName(saveEvent.getWord().getName());
         word.setFrequency(0L);
         word.setTags(saveEvent.getWord().getTags());
-        word.setLemma(saveEvent.getWord().getLemma());
+
+        List<String> list = saveEvent.getWord().getTags().stream().map(Enum::name).collect(Collectors.toList());
+        map.put(saveEvent.getWord().getName(), list);
+        String lemma = textManagementService.getLemmas(map).getSecond()[0];
+        word.setLemma(saveEvent.getWord().getLemma() == null ? lemma : saveEvent.getWord().getLemma());
 
         wordManagementService.save(word);
         updateList();

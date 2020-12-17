@@ -12,6 +12,7 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -74,6 +75,12 @@ public class TextManagementService {
 
     @SneakyThrows
     private void createLemmasForWord(Map<String, List<String>> nameTag) {
+        Pair<String[], String[]> pair = getLemmas(nameTag);
+        wordManagementService.saveNameLemma(pair.getFirst(), pair.getSecond()); //TODO: think of how to improve it
+    }
+
+    @SneakyThrows
+    public Pair<String[], String[]> getLemmas(Map<String, List<String>> nameTag) {
         String[] tokens = nameTag.keySet().toArray(new String[0]);
         String[] tags = nameTag.values().stream().map(tagList -> tagList.get(0)).toArray(String[]::new);
         System.out.println(Arrays.toString(tokens));
@@ -84,12 +91,7 @@ public class TextManagementService {
 
         String[] lemmas = lemmatizer.lemmatize(tokens, tags);
         String[] taggedLemmas = tokenize(String.join(" ", lemmas)).split(" ");
-
-        System.out.println("tagged lemmas");
-        Arrays.stream(taggedLemmas).forEach(System.out::println);
-
-        wordManagementService.saveNameLemma(tokens, taggedLemmas); //TODO: think of how to improve it
-        System.out.println(Arrays.toString(taggedLemmas));
+        return Pair.of(tokens, taggedLemmas);
     }
 
     @SneakyThrows
