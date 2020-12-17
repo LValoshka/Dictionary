@@ -18,7 +18,6 @@ public class MainLayout extends AppLayout {
 
     private void createHeader() {
         Button textButton = new Button(VaadinIcon.TEXT_LABEL.create());
-        textButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
         textButton.addClickListener(e -> UI.getCurrent().navigate("text"));
         Button tableButton = new Button(VaadinIcon.TABLE.create());
         tableButton.addClickListener(e -> UI.getCurrent().navigate("words"));

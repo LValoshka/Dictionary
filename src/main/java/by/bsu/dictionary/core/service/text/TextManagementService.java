@@ -12,7 +12,6 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -56,13 +55,14 @@ public class TextManagementService {
 
     public boolean parseText() {
         String[] words = globalText.split("[\\s|(,)]+");
-        for (String s : words) {
-            System.out.println(s);
-        }
-        Map<String, List<String>> namePartOfSpeech = parseNameTag(Arrays.asList(words));
 
-        Map<String, Long> nameFrequency = namePartOfSpeech.keySet().stream()
-                .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
+        HashMap<String, List<String>> namePartOfSpeech = parseNameTag(Arrays.asList(words));
+
+        Map<String, Long> nameFrequency = new HashMap();
+        namePartOfSpeech.forEach((key, val) -> {
+            nameFrequency.put(key, (long) val.size());
+        });
+
         wordManagementService.saveNameFrequency(nameFrequency);
         createLemmasForWord(namePartOfSpeech);
         return wordManagementService.saveNameTag(namePartOfSpeech);
@@ -106,40 +106,8 @@ public class TextManagementService {
         return sample.toString();
     }
 
-    public Collection<String> getDifference(String newValue, String oldValue) {
-        List<String> newValues = Arrays.asList(newValue.split(" "));
-        List<String> oldValues = Arrays.asList(oldValue.split(" "));
-        return CollectionUtils.subtract(newValues, oldValues);
-    }
-
-//    public void parseEditedWord(String newValue, String oldValue) {
-//        Collection<String> words = getDifference(newValue, oldValue);
-//        Map<String, List<String>> newNameTag = parseNameTag(words);
-//        List<Word.Tags> oldTags = wordManagementService.getByName(oldValue.split("_")[0]);
-//        newNameTag.forEach((newName, newTags) -> {
-//            Optional<Word> wordOptional = wordRepository.findByName(newName);
-//            wordOptional.ifPresent(word -> {
-////                List<String> tagsByWord = word.getParts().stream().map(PartOfSpeech::getTag).collect(Collectors.toList());
-////                Collection<String> coll = CollectionUtils.subtract(tags, tagsByWord);
-//                if(!coll.isEmpty()){
-//
-//                    System.out.println("here");
-//                    System.out.println("diff "+coll.toString());
-//                    System.out.println("name: "+newName);
-//                    System.out.println("new tags: "+newTags.toString());
-//                    System.out.println("old tags: "+tagsByWord.toString());
-//                    Map<String, List<String>> map = new HashMap<>();
-//                    map.put(word.getName(), newTags);
-////                    partOfSpeechManagementService.save(map);
-//                    wordManagementService.save(word);
-//                }
-//            });
-//        });
-//
-//    }
-
-    public Map<String, List<String>> parseNameTag(Collection<String> words) {
-        Map<String, List<String>> nameTag = new HashMap<>();
+    public HashMap<String, List<String>> parseNameTag(Collection<String> words) {
+        HashMap<String, List<String>> nameTag = new HashMap<>();
 
         words.forEach(str -> {
             String[] parsedStr = str.split("_");
@@ -154,7 +122,6 @@ public class TextManagementService {
                 nameTag.put(name, list);
             }
         });
-        nameTag.forEach((key, value) -> System.out.println("key: " + key + " value: " + value));
         return nameTag;
     }
 

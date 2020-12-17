@@ -24,10 +24,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -84,6 +81,7 @@ public class WordsView extends VerticalLayout {
 
     private void saveWord(WordCreationForm.SaveEvent saveEvent) {
         Word word = new Word();
+        Map<String, List<String>> map = new HashMap<>();
         word.setName(saveEvent.getWord().getName());
         word.setFrequency(0L);
         word.setTags(saveEvent.getWord().getTags());
