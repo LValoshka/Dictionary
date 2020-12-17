@@ -15,7 +15,7 @@ public class TagFrequencyService {
     private final TagFrequencyStatRepository tagFrequencyStatRepository;
 
     public List<TagFrequencyStat> findAll() {
-        return tagFrequencyStatRepository.findAll();
+        return tagFrequencyStatRepository.findAllTag();
     }
 
     public void save(Map<String, Long> map) {
