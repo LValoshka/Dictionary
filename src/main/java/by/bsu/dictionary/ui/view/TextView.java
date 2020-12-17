@@ -5,6 +5,7 @@ import by.bsu.dictionary.ui.MainLayout;
 import by.bsu.dictionary.ui.dialog.ConfirmDialog;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -19,6 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Route(value = "text", layout = MainLayout.class)
 @PageTitle("Text")
+@CssImport("./style/style.css")
 public class TextView extends VerticalLayout {
 
     private final TextArea textArea = new TextArea("Here you can see the text");
@@ -32,6 +34,7 @@ public class TextView extends VerticalLayout {
 
     public TextView(TextManagementService textManagementService) {
         this.textManagementService = textManagementService;
+        textArea.addClassName("content");
         add(getToolBar(), textArea, saveButton);
         uploadFile();
         setTextToTextArea(TextManagementService.globalText);

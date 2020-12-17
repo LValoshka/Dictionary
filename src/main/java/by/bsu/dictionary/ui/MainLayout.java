@@ -1,30 +1,44 @@
 package by.bsu.dictionary.ui;
 
+import by.bsu.dictionary.ui.view.*;
 import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.HighlightConditions;
+import com.vaadin.flow.router.RouterLink;
 
+@CssImport("./style/style.css")
 public class MainLayout extends AppLayout {
 
     public MainLayout() {
         createHeader();
+        createDrawer();
+    }
+
+    private void createDrawer() {
+        RouterLink textLink = new RouterLink("Text", TextView.class);
+        textLink.setHighlightCondition(HighlightConditions.sameLocation());
+        RouterLink wordsLink = new RouterLink("Words", WordsView.class);
+        RouterLink tagFrequencyStatLink = new RouterLink("Tag-Frequency statistics", StatisticsView.class);
+        RouterLink nameTagFrequencyStatLink = new RouterLink("Word_Tag-Frequency statistics", NameTagView.class);
+        RouterLink tagTagFrequencyStatLink = new RouterLink("Tag_Tag-Frequency statistics", TagsFrequencyView.class);
+
+        addToDrawer(new VerticalLayout(textLink, wordsLink, tagFrequencyStatLink, nameTagFrequencyStatLink, tagTagFrequencyStatLink));
     }
 
     private void createHeader() {
-        H1 logo = new H1("Logo=)");
+        H1 logo = new H1("Dictionary");
         logo.addClassName("logo");
 
-        Button textButton = new Button(VaadinIcon.TEXT_LABEL.create());
-        textButton.addClickListener(e -> UI.getCurrent().navigate("text"));
-        Button tableButton = new Button(VaadinIcon.TABLE.create());
-        tableButton.addClickListener(e -> UI.getCurrent().navigate("words"));
         Button info = new Button(VaadinIcon.INFO.create());
         info.addClickListener(e -> {
             Dialog dialog = createDialog();
@@ -32,16 +46,8 @@ public class MainLayout extends AppLayout {
             dialog.setDraggable(true);
             dialog.open();
         });
-        Button statButton = new Button(VaadinIcon.STAR_HALF_LEFT.create());
-        statButton.addClickListener(e -> UI.getCurrent().navigate("stat"));
-        Button nameTagButton = new Button("Name-tag");
-        nameTagButton.addClickListener(e -> UI.getCurrent().navigate("nameTag"));
-        Button tagsButton = new Button("Tags");
-        tagsButton.addClickListener(e -> UI.getCurrent().navigate("tags"));
 
-
-        HorizontalLayout header = new HorizontalLayout(textButton, tableButton, info,
-                statButton, nameTagButton, tagsButton);
+        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), info, logo);
         header.addClassName("header");
         header.setWidth("100%");
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);

@@ -3,6 +3,7 @@ package by.bsu.dictionary.ui.view;
 import by.bsu.dictionary.core.model.TagFrequencyStat;
 import by.bsu.dictionary.core.service.statistics.StatisticsService;
 import by.bsu.dictionary.ui.MainLayout;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -10,6 +11,7 @@ import com.vaadin.flow.router.Route;
 
 @Route(value = "stat", layout = MainLayout.class)
 @PageTitle("Statistics")
+@CssImport("./style/style.css")
 public class StatisticsView extends VerticalLayout {
     private final Grid<TagFrequencyStat> statGrid = new Grid<>(TagFrequencyStat.class);
 
@@ -17,6 +19,7 @@ public class StatisticsView extends VerticalLayout {
 
     public StatisticsView(StatisticsService statisticsService) {
         this.statisticsService = statisticsService;
+        statGrid.addClassName("content");
         setSizeFull();
         configureGrid();
         add(statGrid);

@@ -10,6 +10,7 @@ import by.bsu.dictionary.ui.dialog.CreationDialog;
 import by.bsu.dictionary.ui.form.WordCreationForm;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 
 @Route(value = "words", layout = MainLayout.class)
 @PageTitle("Words")
+@CssImport("./style/style.css")
 public class WordsView extends VerticalLayout {
 
     private final Collection<Button> editButtons = Collections.newSetFromMap(new WeakHashMap<>());
@@ -61,7 +63,7 @@ public class WordsView extends VerticalLayout {
         this.textManagementService = textManagementService;
 
         setSizeFull();
-
+        wordGrid.addClassName("content");
         add(getToolBar(), wordGrid);
 
         configureGrid();
